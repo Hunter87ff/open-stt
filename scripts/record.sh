@@ -1,0 +1,1 @@
+arecord -f S16_LE -c 1 -r 16000 -t wav ./voice.wav
