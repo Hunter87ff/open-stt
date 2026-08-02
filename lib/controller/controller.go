@@ -12,19 +12,17 @@ import (
 	"os"
 	"os/exec"
 	"sync"
+
 	hook "github.com/robotn/gohook"
 )
 
-
-
+// Controller manages the recording and transcription workflow
 type Controller struct {
-	fp string
-	mu sync.Mutex
-	text string
+	recorder *recorder.Recorder
+	fp       string
+	mu       sync.Mutex
+	text     string
 }
-
-
-
 
 func (c *Controller) pasteText() error {
 	if c.text == "" {
@@ -42,7 +40,6 @@ func (c *Controller) pasteText() error {
 	return fmt.Errorf("need xdotool or wtype to paste text")
 }
 
-
 func (c *Controller) handleRecording(audioPath string) {
 	if audioPath == "" {
 		return
@@ -50,6 +47,8 @@ func (c *Controller) handleRecording(audioPath string) {
 
 	transcript, err := transcriber.Transcribe(audioPath)
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "transcribe error: %v\n", err)
+		_ = os.Remove(audioPath)
 		return
 	}
 
@@ -65,19 +64,19 @@ func (c *Controller) handleRecording(audioPath string) {
 	_ = os.Remove(audioPath)
 }
 
-
-func handle(){
+func Listen() {
 	var rec recorder.Recorder
 	var ctrl Controller
 
-	
 	hook.Register(hook.KeyDown, []string{config.RecordHotkey}, func(e hook.Event) {
+
 		if err := rec.Start(); err != nil {
 			fmt.Fprintf(os.Stderr, "record start error: %v\n", err)
 		}
 	})
 
 	hook.Register(hook.KeyUp, []string{config.RecordHotkey}, func(e hook.Event) {
+
 		audioPath := rec.Stop()
 		go ctrl.handleRecording(audioPath)
 	})
