@@ -13,21 +13,37 @@ import (
 	"strings"
 	"sync"
 	"time"
-
 	hook "github.com/robotn/gohook"
+	"open-sst/lib/config"
 )
 
-const (
-	recordHotkey        = "f6"
-	transcribeEndpoint  = "http://127.0.0.1:8080/v1/audio/transcriptions"
-	transcribeModel     = "qwen3-asr-0.6b"
-	recordingSampleRate = "16000"
+var (
+	recordHotkey        = config.RecordHotkey
+	transcribeEndpoint  = config.TranscribeEndpoint
+	transcribeModel     = config.TranscribeModel
+	recordingSampleRate = config.RecordingSampleRate
 )
 
 type recorder struct {
 	mu        sync.Mutex
 	cmd       *exec.Cmd
 	audioPath string
+}
+
+
+
+func parseResponse(response string) string {
+	// Check if the response contains the <asr_text> tag
+	if strings.Contains(response, "<asr_text>") {
+		// Split the response by the <asr_text> tag and return the text after it
+		parts := strings.Split(response, "<asr_text>")
+		if len(parts) > 1 {
+			return strings.TrimSpace(parts[1])
+		}
+	}
+
+	// If the tag is not found, return the original response
+	return strings.TrimSpace(response)
 }
 
 
@@ -173,10 +189,10 @@ func transcribe(audioPath string) (string, error) {
 		Text string `json:"text"`
 	}
 	if err := json.Unmarshal(responseBody, &payload); err == nil && payload.Text != "" {
-		return strings.TrimSpace(payload.Text), nil
+		return parseResponse(payload.Text), nil
 	}
 
-	return strings.TrimSpace(string(responseBody)), nil
+	return parseResponse(string(responseBody)), nil
 }
 
 func pasteText(text string) error {
