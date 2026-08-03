@@ -1,7 +1,7 @@
 package main
 
 import (
-	"open-sst/lib/controller"
+	"open-stt/lib/controller"
 )
 
 func main() {

@@ -2,7 +2,7 @@ package recorder
 
 import (
 	"fmt"
-	config "open-sst/lib/config"
+	config "open-stt/lib/config"
 	"os"
 	"os/exec"
 	"sync"
@@ -35,7 +35,7 @@ func checkDependencies() error {
 }
 
 func createTempFile() (string, error) {
-	tmpFile, err := os.CreateTemp("", "open-sst-*.wav")
+	tmpFile, err := os.CreateTemp("", "open-stt-*.wav")
 	if err != nil {
 		return "", err
 	}

@@ -1,16 +1,16 @@
 package transcriber
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"io"
-	"mime/multipart"
-	"net/http"
-	config "open-sst/lib/config"
 	"os"
-	"path/filepath"
+	"io"
+	"fmt"
+	"bytes"
 	"strings"
+	"net/http"
+	"path/filepath"
+	"encoding/json"
+	"mime/multipart"
+	"open-stt/lib/config"
 )
 
 var client = &http.Client{}

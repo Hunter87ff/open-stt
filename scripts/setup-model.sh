@@ -1,1 +1,1 @@
-llama-server -hf hunter87/Qwen3-ASR-0.6B-GGUF -c 350 -np 1 -b 32 -ub 32 --flash-attn on --n-gpu-layers 999 --no-mmap -t 2
+llama-server -hf hunter87/Qwen3-ASR-0.6B-GGUF -c 350 -np 1 -b 32 -ub 32 --flash-attn on --n-gpu-layers 15 --no-mmap -t 2 --cache-type-k q4_0  --cache-type-v q4_0

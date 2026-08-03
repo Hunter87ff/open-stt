@@ -5,15 +5,14 @@ This package handles keyboard action and corosponding actions. It is responsible
 package controller
 
 import (
-	"fmt"
-	"open-sst/lib/config"
-	"open-sst/lib/recorder"
-	"open-sst/lib/transcriber"
 	"os"
-	"os/exec"
+	"fmt"
 	"sync"
-
-	hook "github.com/robotn/gohook"
+	"open-stt/lib/config"
+	"open-stt/lib/recorder"
+	"github.com/robotn/gohook"
+	"open-stt/lib/transcriber"
+	"golang.design/x/clipboard"
 )
 
 // Controller manages the recording and transcription workflow
@@ -29,15 +28,11 @@ func (c *Controller) pasteText() error {
 		return nil
 	}
 
-	if _, err := exec.LookPath("xdotool"); err == nil {
-		return exec.Command("xdotool", "type", "--clearmodifiers", "--delay", "0", c.text).Run()
+	err := clipboard.Write(clipboard.FmtText, []byte(c.text))
+	if err != nil {
+		return fmt.Errorf("failed to write to clipboard: %w", err)
 	}
-
-	if _, err := exec.LookPath("wtype"); err == nil {
-		return exec.Command("wtype", c.text).Run()
-	}
-
-	return fmt.Errorf("need xdotool or wtype to paste text")
+	return nil
 }
 
 func (c *Controller) handleRecording(audioPath string) {

@@ -1,4 +1,4 @@
-# open-sst
+# open-stt
 
 Push-to-talk speech-to-text. Hold **F6** to record, release to transcribe and paste the result at the cursor. **F7** quits.
 
@@ -12,7 +12,7 @@ Push-to-talk speech-to-text. Hold **F6** to record, release to transcribe and pa
 
 ```sh
 go mod tidy
-go build -o open-sst .
+go build -o open-stt .
 ```
 
 ## Run
@@ -26,7 +26,7 @@ llama-server -hf hunter87/Qwen3-ASR-0.6B-GGUF -c 350 -np 1 --flash-attn on --n-g
 Terminal 2 — run the app:
 
 ```sh
-./open-sst
+./open-stt
 ```
 
 Hold `F6`, speak, release. The transcript is typed at the cursor. `F7` to quit.
