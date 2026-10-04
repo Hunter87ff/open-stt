@@ -9,10 +9,11 @@ import (
 	"fmt"
 	"sync"
 	"open-stt/lib/config"
+	"open-stt/lib/xpaste"
 	"open-stt/lib/recorder"
-	"github.com/robotn/gohook"
 	"open-stt/lib/transcriber"
-	"golang.design/x/clipboard"
+	hook "github.com/robotn/gohook"
+	clipboard "golang.design/x/clipboard"
 )
 
 // Controller manages the recording and transcription workflow
@@ -25,13 +26,20 @@ type Controller struct {
 
 func (c *Controller) pasteText() error {
 	if c.text == "" {
+		fmt.Println("No speech detected (empty transcript).")
 		return nil
 	}
+	fmt.Printf("Transcribed Text: %s\n", c.text)
 
-	err := clipboard.Write(clipboard.FmtText, []byte(c.text))
-	if err != nil {
-		return fmt.Errorf("failed to write to clipboard: %w", err)
+	// Copy to clipboard
+	clipboard.Write(clipboard.FmtText, []byte(c.text))
+
+	// do a paste at cursor
+	// Paste/type text at cursor
+	if err := xpaste.PasteText(c.text); err != nil {
+		return fmt.Errorf("failed to paste text: %v", err)
 	}
+	
 	return nil
 }
 
