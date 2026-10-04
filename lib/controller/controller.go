@@ -5,16 +5,20 @@ This package handles keyboard action and corosponding actions. It is responsible
 package controller
 
 import (
-	"os"
 	"fmt"
-	"sync"
 	"open-stt/lib/config"
-	"open-stt/lib/xpaste"
+	"open-stt/lib/logging"
 	"open-stt/lib/recorder"
 	"open-stt/lib/transcriber"
+	"open-stt/lib/xpaste"
+	"os"
+	"sync"
+
 	hook "github.com/robotn/gohook"
 	clipboard "golang.design/x/clipboard"
 )
+
+var logger = logging.Logger
 
 // Controller manages the recording and transcription workflow
 type Controller struct {
@@ -26,10 +30,10 @@ type Controller struct {
 
 func (c *Controller) pasteText() error {
 	if c.text == "" {
-		fmt.Println("No speech detected (empty transcript).")
+		logger.Debug("No speech detected (empty transcript).")
 		return nil
 	}
-	fmt.Printf("Transcribed Text: %s\n", c.text)
+	logger.Info(fmt.Sprintf("Transcribed Text: %s", c.text))
 
 	// Copy to clipboard
 	clipboard.Write(clipboard.FmtText, []byte(c.text))
@@ -37,9 +41,10 @@ func (c *Controller) pasteText() error {
 	// do a paste at cursor
 	// Paste/type text at cursor
 	if err := xpaste.PasteText(c.text); err != nil {
-		return fmt.Errorf("failed to paste text: %v", err)
+		logger.Error(fmt.Sprintf("failed to paste text: %s", err))
+		return err
 	}
-	
+
 	return nil
 }
 
@@ -50,7 +55,7 @@ func (c *Controller) handleRecording(audioPath string) {
 
 	transcript, err := transcriber.Transcribe(audioPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "transcribe error: %v\n", err)
+		logger.Error(fmt.Sprintf("transcribe error: %v", err))
 		_ = os.Remove(audioPath)
 		return
 	}
@@ -61,7 +66,7 @@ func (c *Controller) handleRecording(audioPath string) {
 	c.mu.Unlock()
 
 	if err := c.pasteText(); err != nil {
-		fmt.Fprintf(os.Stderr, "paste error: %v\n", err)
+		logger.Error(fmt.Sprintf("paste error: %v", err))
 	}
 
 	_ = os.Remove(audioPath)
@@ -71,26 +76,26 @@ func Listen() {
 	var rec recorder.Recorder
 	var ctrl Controller
 
-	hook.Register(hook.KeyDown, []string{config.RecordHotkey}, func(e hook.Event) {
+	hook.Register(hook.KeyDown, []string{config.Hotkeys.Record}, func(e hook.Event) {
 
 		if err := rec.Start(); err != nil {
-			fmt.Fprintf(os.Stderr, "record start error: %v\n", err)
+			logger.Error(fmt.Sprintf("record start error: %v", err))
 		}
 	})
 
-	hook.Register(hook.KeyUp, []string{config.RecordHotkey}, func(e hook.Event) {
+	hook.Register(hook.KeyUp, []string{config.Hotkeys.Record}, func(e hook.Event) {
 
 		audioPath := rec.Stop()
 		go ctrl.handleRecording(audioPath)
 	})
 
-	hook.Register(hook.KeyDown, []string{config.QuitHotkey}, func(e hook.Event) {
+	hook.Register(hook.KeyDown, []string{config.Hotkeys.Quit}, func(e hook.Event) {
 		os.Exit(0)
 	})
 
 	s := hook.Start()
 	if s == nil {
-		fmt.Fprintln(os.Stderr, "failed to start global hook")
+		logger.Error("failed to start global hook")
 		return
 	}
 

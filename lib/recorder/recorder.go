@@ -1,13 +1,17 @@
 package recorder
 
 import (
-	"fmt"
-	config "open-stt/lib/config"
 	"os"
-	"os/exec"
+	"fmt"
 	"sync"
 	"time"
+	"os/exec"
+	"open-stt/lib/config"
+	"open-stt/lib/logging"
 )
+
+
+var logger = logging.Logger
 
 type Recorder struct {
 	mu        sync.Mutex
@@ -28,7 +32,8 @@ func checkDependencies() error {
 	// Check if ffmpeg is installed
 	_, err := exec.LookPath("ffmpeg")
 	if err != nil {
-		return fmt.Errorf("ffmpeg is not installed or not found in PATH. Please install ffmpeg to use this application")
+		logger.Error("ffmpeg is not installed or not found in PATH. Please install ffmpeg to use this application")
+		return err
 	}
 
 	return nil
@@ -87,7 +92,7 @@ func (r *Recorder) Start() error {
 		return err
 	}
 
-	fmt.Println("Recording started...")
+	logger.Info("Recording started...")
 
 	cmd, err := startAudioCapture(filePath)
 	if err != nil {
@@ -141,7 +146,7 @@ func (r *Recorder) Stop() string {
 		<-done
 	case <-done:
 	}
-	fmt.Println("Recording stopped.")
+	logger.Info("Recording stopped.")
 
 	return audioPath
 }
